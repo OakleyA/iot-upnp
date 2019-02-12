@@ -197,6 +197,7 @@ class DescriptionAnswer(HttpAnswer):
                 <major>1</major>
                 <minor>0</minor>
             </specVersion>
+            <URLBase>http://localhost</URLBase>
         """.format(CONFIGID=self.upnp.configId)
         self.describeDevice(self.upnp.device)
         self.data += """
