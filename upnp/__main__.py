@@ -24,8 +24,8 @@ if __name__ == "__main__":
         'serviceId': 'sadmin-fr:serviceId:1',
     }))
 
-    upnpd = Annoncer(dev)
+    upnpd = Announcer(dev)
     upnpd.initLoop()
     upnpd.notify()
-    upnpd.foreaver()
+    upnpd.forever()
     upnpd.dispose()

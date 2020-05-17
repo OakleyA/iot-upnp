@@ -5,6 +5,7 @@ class _BaseObj:
     Base object with dict initialisation
 
     """
+
     def __init__(self, obj=None):
         if obj == None:
             return
@@ -13,10 +14,12 @@ class _BaseObj:
             if hasattr(self, atr):
                 setattr(self, atr, obj[atr])
 
+
 class Device(_BaseObj):
     """
     An UPnP device on the Network
     """
+
     def __init__(self, obj=None):
         """
         Device object initialisation
@@ -53,17 +56,19 @@ class Device(_BaseObj):
     def addDevice(self, device):
         """
         Add an embedded device
-        
+
         :param device: The embedded device to add
         :type device: upnp.Device
         """
         self.devices.append(device)
 
+
 class Icon(_BaseObj):
     """
     An device icon
-    (don't work on Windows)
+    (doesn't work on Windows)
     """
+
     def __init__(self, obj=None):
         self.width = 32
         self.height = 32
@@ -72,10 +77,12 @@ class Icon(_BaseObj):
 
         super(Icon, self).__init__(obj)
 
+
 class Service(_BaseObj):
     """
     A service on a device
     """
+
     def __init__(self, obj=None):
         """
         Service object initialisation

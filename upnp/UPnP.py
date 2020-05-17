@@ -6,9 +6,10 @@ from .HTTP import HTTP
 
 from random import randrange
 
+
 class Announcer:
     """
-    Annoncer main class
+    Announcer main class
     """
 
     def __init__(self, device, httpPort=5000, netBind='0.0.0.0'):
@@ -25,7 +26,7 @@ class Announcer:
         self.device = None
         self.loop = asyncio.get_event_loop()
 
-        #SSDP entry
+        # SSDP entry
         self.ssdp = SSDP(self, netBind)
         self.http = HTTP(self, httpPort, netBind)
         self.device = device
@@ -63,7 +64,7 @@ class Announcer:
         self.ssdp.dispose()
         self.http.dispose()
 
-    def foreaver(self):
+    def forever(self):
         """
         Run loop forever (test)
         """
@@ -74,6 +75,3 @@ class Announcer:
 
         self.dispose()
         self.loop.close()
-
-class Annoncer(Announcer):
-    pass

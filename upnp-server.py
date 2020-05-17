@@ -2,6 +2,7 @@
 
 import upnp
 
+
 def start_server():
     device = upnp.Device({
         'deviceType': 'urn:schemas-upnp-org:device:MediaServer:1',
@@ -12,7 +13,7 @@ def start_server():
         'manufacturerURL': 'http://example.com',
     })
 
-    for i in range(1, 20):        
+    for i in range(1, 20):
         service = upnp.Service({
             'serviceType': 'urn:schemas-upnp-org:service:ContentDirectory:1',
             'serviceId': 'example-com:serviceId:%d' % i,
@@ -23,8 +24,9 @@ def start_server():
     server = upnp.Announcer(device)
     server.initLoop()
     server.notify()
-    server.foreaver()
+    server.forever()
     server.dispose()
+
 
 if __name__ == '__main__':
     start_server()

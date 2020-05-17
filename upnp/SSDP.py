@@ -5,15 +5,17 @@ import socket
 import struct
 import netifaces
 
+
 class AnnouncerService(ssdp.SimpleServiceDiscoveryProtocol):
     """
     Endpoint for UDP packets (used by asyncio)
     """
+
     def __init__(self):
         """
         Initiate the UDP endpoint
         """
-        self.annonces = None
+        self.announces = None
 
     def connection_made(self, transport):
         """
@@ -26,7 +28,8 @@ class AnnouncerService(ssdp.SimpleServiceDiscoveryProtocol):
         sock = transport.get_extra_info("socket")
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        mreq = struct.pack("4sl", socket.inet_aton(self.MULTICAST_ADDRESS), socket.INADDR_ANY)
+        mreq = struct.pack("4sl", socket.inet_aton(
+            self.MULTICAST_ADDRESS), socket.INADDR_ANY)
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
     def response_received(self, response, addr):
@@ -48,8 +51,9 @@ class AnnouncerService(ssdp.SimpleServiceDiscoveryProtocol):
             for (name, value) in request.headers:
                 headers[name] = value
 
-            if self.annonces.provides(headers['ST']):
-                self.annonces.answer(headers['ST'], addr)
+            if self.announces.provides(headers['ST']):
+                self.announces.answer(headers['ST'], addr)
+
 
 class Notify(ssdp.SSDPRequest):
     """
@@ -74,7 +78,7 @@ class Notify(ssdp.SSDPRequest):
         self.location = 'http://ff:1900/description.xml'
         super(Notify, self).__init__('NOTIFY')
 
-    def send(self, ip, usn = None, transport = None):
+    def send(self, ip, usn=None, transport=None):
         """
         Build and send the packet
 
@@ -93,22 +97,25 @@ class Notify(ssdp.SSDPRequest):
 
         self.headers = [
             ('Host', '239.255.255.250'),
-            ('LOCATION', 'http://' + ip + ':' + str(self.config.annoncer.http.port) + '/descr.xml'),
+            ('LOCATION', 'http://' + ip + ':' +
+             str(self.config.announcer.http.port) + '/descr.xml'),
             ('NTS', self.nts),
             ('SERVER', ip),
             ('NT', self.nt),
             ('USN', usn),
-            ('BOOTID.UPNP.ORG', self.config.srv.annonces.count),
-            ('CONFIGID.UPNP.ORG', self.config.annoncer.configId),
+            ('BOOTID.UPNP.ORG', self.config.srv.announces.count),
+            ('CONFIGID.UPNP.ORG', self.config.announcer.configId),
         ]
 
         if self.counter > 0:
             self.headers.append(('BOOTID.UPNP.ORG', self.counter))
 
         if self.nts != 'ssdp:byebye':
-            self.headers.append(('CACHE-CONTROL',  'max-age=' + str(self.config.maxage)))
+            self.headers.append(
+                ('CACHE-CONTROL',  'max-age=' + str(self.config.maxage)))
 
-        self.sendto(transport, (AnnouncerService.MULTICAST_ADDRESS, self.config.port))
+        self.sendto(
+            transport, (AnnouncerService.MULTICAST_ADDRESS, self.config.port))
 
     def sendto(self, transport, addr):
         """
@@ -121,7 +128,8 @@ class Notify(ssdp.SSDPRequest):
         """
         msg = bytes(self) + b'\r\n\r\n'
         transport.sendto(msg, addr)
-        self.config.srv.annonces.count = self.config.srv.annonces.count + 1
+        self.config.srv.announces.count = self.config.srv.announces.count + 1
+
 
 class Answer(ssdp.SSDPResponse):
     """
@@ -158,14 +166,16 @@ class Answer(ssdp.SSDPResponse):
 
         self.headers = [
             ('CACHE-CONTROL',  'max-age=' + str(self.config.maxage)),
-            ('DATE', datetime.datetime.utcnow().strftime('%a, %d %b %Y %H:%M:%S GMT')),
+            ('DATE', datetime.datetime.utcnow().strftime(
+                '%a, %d %b %Y %H:%M:%S GMT')),
             ('ST', self.st),
             ('USN', device.uuid + '::' + device.st),
             ('EXT', ''),
             ('SERVER', self.config.signature),
-            ('LOCATION', 'http://' + ip + ':' + str(self.config.annoncer.http.port) + '/descr.xml'),
-            ('BOOTID.UPNP.ORG', self.config.srv.annonces.count),
-            ('CONFIGID.UPNP.ORG', self.config.annoncer.configId),
+            ('LOCATION', 'http://' + ip + ':' +
+             str(self.config.announcer.http.port) + '/descr.xml'),
+            ('BOOTID.UPNP.ORG', self.config.srv.announces.count),
+            ('CONFIGID.UPNP.ORG', self.config.announcer.configId),
         ]
         self.sendto(self.config.transport, addr)
 
@@ -180,7 +190,8 @@ class Answer(ssdp.SSDPResponse):
         """
         msg = bytes(self) + b'\r\n\r\n'
         transport.sendto(msg, addr)
-        self.config.srv.annonces.count = self.config.srv.annonces.count + 1
+        self.config.srv.announces.count = self.config.srv.announces.count + 1
+
 
 class SSDP_Protocol:
     """
@@ -224,7 +235,8 @@ class SSDP_Protocol:
         :param addr: Destination address of answer
         :type addr: (str, int)
         """
-        import locale, datetime
+        import locale
+        import datetime
 
         message = Answer(self.config, 200, "OK")
         message.st = st
@@ -243,13 +255,13 @@ class SSDP_Protocol:
         :rtype: list(upnp.Objects.Device)
         """
 
-        #root device
+        # root device
         if st == 'upnp:rootdevice':
-            return [self.config.annoncer.device]
+            return [self.config.announcer.device]
 
         devices = list()
-        if self.config.annoncer.device.st == st:
-            devices.append(self.config.annoncer.device)
+        if self.config.announcer.device.st == st:
+            devices.append(self.config.announcer.device)
         return devices
 
     def provides(self, usn):
@@ -264,26 +276,27 @@ class SSDP_Protocol:
         if usn == 'upnp:rootdevice':
             return True
 
-        if self.config.annoncer.device.st == usn:
+        if self.config.announcer.device.st == usn:
             return True
         return False
+
 
 class SSDP:
     """
     Public class to handle SSDP protocol
     """
 
-    def __init__(self, annoncer, netBind='0.0.0.0'):
+    def __init__(self, announcer, netBind='0.0.0.0'):
         """
         Initiate an SSDP endpoint
 
-        :param annoncer: An announcer configuration
-        :type annoncer: upnp.UPnP.Announcer
+        :param announcer: An announcer configuration
+        :type announcer: upnp.UPnP.Announcer
         :param netBind: Interface address to bind
         :type netBind: str
         """
 
-        self.annoncer = annoncer
+        self.announcer = announcer
         self.port = 1900
         self.family = socket.AF_INET
         self.netbind = netBind
@@ -296,7 +309,8 @@ class SSDP:
                 try:
                     if netifaces.ifaddresses(iface)[netifaces.AF_INET][0]['addr'] == '127.0.0.1':
                         continue
-                    self.interfaces.append(netifaces.ifaddresses(iface)[netifaces.AF_INET][0]['addr'])
+                    self.interfaces.append(netifaces.ifaddresses(iface)[
+                                           netifaces.AF_INET][0]['addr'])
                 except KeyError:
                     pass
         else:
@@ -309,16 +323,17 @@ class SSDP:
         :param loop: An asyncio event loop
         :type loop: asyncio.AbstractEventLoop
         """
-        self.client = loop.create_datagram_endpoint(AnnouncerService, family=self.family, local_addr=(self.netbind, self.port))
+        self.client = loop.create_datagram_endpoint(
+            AnnouncerService, family=self.family, local_addr=(self.netbind, self.port))
         self.transport, self.srv = loop.run_until_complete(self.client)
-        self.srv.annonces = SSDP_Protocol(self)
+        self.srv.announces = SSDP_Protocol(self)
 
     def notify(self):
         """
         Send NOTIFY packets
         """
         for ip in self.interfaces:
-            self.srv.annonces.notify(self.annoncer.device, ip)
+            self.srv.announces.notify(self.announcer.device, ip)
 
     def dispose(self):
         """

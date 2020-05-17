@@ -5,11 +5,11 @@ from setuptools import setup
 from os import path, getenv
 
 version = '1.0.3'
-release = getenv('TRAVIS_TAG', '0.1.dev10')
+release = getenv('TRAVIS_TAG', '0.1.dev11')
 cmdclass = {}
 cmdopts = {}
 
-#Using Shinx documentation
+# Using Shinx documentation
 try:
     from sphinx.setup_command import BuildDoc
 
@@ -18,24 +18,24 @@ try:
         'project': ('setup.py', 'IoT-UPnP'),
         'version': ('setup.py', version),
         'release': ('setup.py', release),
-        'source_dir' : ('setup.py', 'docs'),
-        'build_dir' : ('setup.py', 'build')
+        'source_dir': ('setup.py', 'docs'),
+        'build_dir': ('setup.py', 'build')
     }
 except ImportError:
     print("You must install Sphinx for documentation generation")
 
-#README
+# README
 this_directory = path.abspath(path.dirname(__file__))
 
 with open(path.join(this_directory, 'docs', 'requirements.txt')) as f:
     docs_required = f.read().splitlines()
 
-#Main setup
+# Main setup
 setup(
     version=release,
     cmdclass=cmdclass,
     command_options=cmdopts,
     extras_require={
-        'docs' : docs_required
+        'docs': docs_required
     }
 )
